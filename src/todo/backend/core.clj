@@ -5,7 +5,8 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.cors :refer [wrap-cors]]
-            [todo.backend.handler :as handler])
+            [todo.backend.handler :as handler]
+            [todo.backend.db :as db])
   (:gen-class))
 
 (def app-routes
@@ -35,4 +36,5 @@
 
 (defn -main [& args]
   (let [port (Integer/parseInt (or (first args) "3000"))]
+    (db/initialize-database!)
     (start-server port)))
