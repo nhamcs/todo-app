@@ -52,17 +52,46 @@
                  (swap! app-state assoc :input-text ""))}
     "Adicionar"]])
 
+(defn toggle-todo
+  "Chama a API para alternar o status de um todo."
+  [id]
+  (go
+    (try
+      (<p! (fetch-json (str api-url "/todos/" id "/toggle")
+                       {:method "POST"}))
+      (get-todos)
+      (catch js/Error e
+        (swap! app-state assoc :error (.-message e) :loading false)))))
+
+(defn delete-todo
+  "Chama a API para remover um todo."
+  [id]
+  (go
+    (try
+      (<p! (fetch-json (str api-url "/todos/" id)
+                       {:method "DELETE"}))
+      (get-todos)
+      (catch js/Error e
+        (swap! app-state assoc :error (.-message e) :loading false)))))
+
 (defn todo-list []
   [:ul.todo-list
    (for [todo (:todos @app-state)]
      ^{:key (:todos/id todo)}
      [:li.todo-item
-      (:todos/title todo)])])
+           [:input.todo-checkbox
+       {:type "checkbox"
+        :checked (not= 0 (:todos/completed todo))
+        :on-change #(toggle-todo (:todos/id todo))}]
+      [:span.todo-title (:todos/title todo)]
+      [:button.delete-btn
+       {:on-click #(delete-todo (:todos/id todo))}
+       "x"]])])
 
 (defn app []
   [:div.todo-app
-   [:h1 "Todo App"]
-   [:p "Conectado à API. Os dados ficam salvos ao clicar F5!"]
+   [:h1 "Lista de Tarefas✨"]
+   [:p "Adicione uma tarefa! Os dados ficaram guardados, até quando você fechar."]
    [todo-form]
    [todo-list]])
 
